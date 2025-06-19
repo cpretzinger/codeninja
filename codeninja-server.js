@@ -969,7 +969,8 @@ server.setRequestHandler({ method: 'tools/call', handler: async (request) => {
       }]
     };
   }
-}});
+  }
+});
 
 // Start the server
 const transport = new StdioServerTransport();
