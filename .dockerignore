@@ -1,0 +1,83 @@
+# Environment Variables - CRITICAL SECURITY
+.env
+.env.
+*.env
+.env.local
+.env.production
+.env.development
+.env.staging
+
+# MCP Configuration with API Keys
+.roo/
+../../../root/.vscode-server/
+../../../root/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json
+docs/security-audit-report.md
+
+# API Keys and Secrets
+*_API_KEY*
+*_SECRET*
+*_TOKEN*
+*api_key*
+*secret*
+*token*
+*.pem
+*.key
+*.crt
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Docker files
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+test/
+tests/
+__tests__/
+
+# Configuration backups
+*.bak
+*.backup
+config.backup.*
+
+# TypeScript
+*.tsbuildinfo

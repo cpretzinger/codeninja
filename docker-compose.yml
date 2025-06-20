@@ -1,0 +1,18 @@
+services:
+  codeninja:
+    container_name: codeninja
+    build: .
+    restart: unless-stopped
+    environment:
+      # Connect to your EXISTING n8n
+      - N8N_URL=http://host.docker.internal:5678  # For Docker Desktop
+      # OR for Linux:
+      # - N8N_URL=http://172.17.0.1:5678
+      # OR just use the public URL:
+      #- N8N_URL=https://ai.thirdeyediagnostics.com
+      - N8N_API_KEY=${N8N_API_KEY}
+    volumes:
+      - ./logs:/app/logs
+    network_mode: host  # This lets container access localhost:5678
+
+# No n8n service needed - you already have it running!
