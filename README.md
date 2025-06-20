@@ -44,6 +44,7 @@ CodeNinja: "Say no more fam" *creates entire workflow in 2.3 seconds*
 - 🔍 **Smart Debugging** → "Why did my workflow crash?"
 - 🔄 **Bulk Operations** → "Add error handling to everything"
 - 🎯 **Pattern Detection** → Finds issues before they happen
+- 📝 **Workflow → Code** → Convert n8n flows into runnable scripts
 
 ### 💰 Money Printer Features
 - 🤖 **API Integrations** → Connect anything to anything
@@ -78,6 +79,7 @@ pnpm install
 ```bash
 export N8N_URL="http://localhost:5678"
 export N8N_API_KEY="your-n8n-api-key"
+export OPENAI_API_KEY="your-openai-key" # optional for AI refactoring
 ```
 
 ### 4. Configure Claude Desktop
@@ -103,6 +105,11 @@ npm start
 ./start-ninja.sh 🥷
 ```
 
+### 6. Start the CodeGen server (optional)
+```bash
+node workflow-codegen-server.js
+```
+
 ---
 
 ## 🎮 Usage Examples
@@ -119,6 +126,7 @@ npm start
 "Build a complete customer onboarding automation with email sequences"
 "Create a data pipeline that syncs PostgreSQL to Google Sheets every hour"
 "Set up a monitoring system that alerts me when any workflow fails"
+"Convert workflow xyz to code and use AI to apply my refactoring hints"
 ```
 
 ### Money Printer Mode 💸
@@ -138,7 +146,14 @@ npm start
 - `list_workflows` - List all workflows
 - `get_workflow` - Get workflow details
 - `create_workflow` - Create new workflow
+- `activate_workflow` - Deploy and activate a workflow
+- `deactivate_workflow` - Disable a workflow
+- `update_workflow` - Update an existing workflow
+- `delete_workflow` - Delete a workflow
+- `transfer_workflow` - Move a workflow to another project
 - `execute_workflow` - Run a workflow
+- `list_executions` - Query past executions
+- `generate_audit` - Run an instance security audit
 
 </details>
 
@@ -150,6 +165,16 @@ npm start
 - `delete_node` - Remove node
 - `connect_nodes` - Connect two nodes
 - `disconnect_nodes` - Remove connection
+
+</details>
+
+<details>
+<summary><b>🗄️ Instance Tools</b></summary>
+
+- `create_credential` - Add credentials for nodes
+- `pull_remote` - Pull latest workflows from repo
+- `create_variable` - Create an instance variable
+- `list_variables` - List stored variables
 
 </details>
 

@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "axios": "^1.10.0"
+    "axios": "^1.10.0",
+    "test": "^11.4.2"
   },
   "engines": {
     "node": ">=16.0.0"
