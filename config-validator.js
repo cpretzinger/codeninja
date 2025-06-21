@@ -1,140 +1,50 @@
 /**
- * TypeScript Configuration Validator for MCP Server Settings
+ * JavaScript Configuration Validator for MCP Server Settings
  * 
- * This module provides comprehensive type safety for MCP server configurations,
- * preventing runtime errors through strict type checking and validation.
+ * This module provides comprehensive validation for MCP server configurations,
+ * preventing runtime errors through strict validation and error handling.
  */
 
-// Core type definitions for MCP server configuration
-interface MCPServerEnvironment {
-  readonly [key: string]: string;
-}
+const fs = require('fs');
 
-interface MCPServerConfig {
-  readonly command: string;
-  readonly args: readonly string[];
-  readonly env?: MCPServerEnvironment;
-  readonly disabled?: boolean;
-  readonly alwaysAllow?: readonly string[];
-}
-
-interface MCPServersConfig {
-  readonly [serverName: string]: MCPServerConfig;
-}
-
-interface MCPConfiguration {
-  readonly mcpServers: MCPServersConfig;
-}
-
-// Discriminated union types for different server types
-type ServerType = 
-  | 'github'
-  | 'filesystem' 
-  | 'octagon-deep-research-mcp'
-  | 'youtube-transcript'
-  | 'divide-and-conquer'
-  | 'browsermcp'
-  | 'n8n-docs'
-  | 'slack'
-  | 'spotify'
-  | 'supabase'
-  | 'openai'
-  | 'memory'
-  | 'sequential-thinking'
-  | 'puppeteer'
-  | 'clear-thought'
-  | 'healthcare-mcp-public'
-  | 'statpearls-mcp'
-  | 'codeninja';
-
-// Environment variable validation types
-interface N8NEnvironment {
-  readonly N8N_URL: string;
-  readonly N8N_API_KEY: string;
-  readonly N8N_WEBHOOK_URL?: string;
-}
-
-interface GitHubEnvironment {
-  readonly GITHUB_PERSONAL_ACCESS_TOKEN: string;
-}
-
-interface SlackEnvironment {
-  readonly SLACK_BOT_TOKEN: string;
-  readonly SLACK_TEAM_ID: string;
-}
-
-interface SpotifyEnvironment {
-  readonly SPOTIFY_CLIENT_ID: string;
-  readonly SPOTIFY_CLIENT_SECRET: string;
-}
-
-interface OpenAIEnvironment {
-  readonly OPENAI_API_KEY: string;
-}
-
-// Custom error types for configuration validation
-abstract class ConfigurationError extends Error {
-  abstract readonly errorCode: string;
-  
-  constructor(message: string) {
+// Custom error classes for configuration validation
+class ConfigurationError extends Error {
+  constructor(message) {
     super(message);
     this.name = this.constructor.name;
   }
 }
 
 class InvalidServerConfigError extends ConfigurationError {
-  readonly errorCode = 'INVALID_SERVER_CONFIG';
-  
-  constructor(serverName: string, reason: string) {
+  constructor(serverName, reason) {
     super(`Invalid configuration for server '${serverName}': ${reason}`);
+    this.errorCode = 'INVALID_SERVER_CONFIG';
   }
 }
 
 class MissingEnvironmentVariableError extends ConfigurationError {
-  readonly errorCode = 'MISSING_ENV_VAR';
-  
-  constructor(serverName: string, envVar: string) {
+  constructor(serverName, envVar) {
     super(`Missing required environment variable '${envVar}' for server '${serverName}'`);
+    this.errorCode = 'MISSING_ENV_VAR';
   }
 }
 
 class InvalidJSONError extends ConfigurationError {
-  readonly errorCode = 'INVALID_JSON';
-  
-  constructor(filePath: string, parseError: string) {
+  constructor(filePath, parseError) {
     super(`Invalid JSON in configuration file '${filePath}': ${parseError}`);
+    this.errorCode = 'INVALID_JSON';
   }
 }
 
 class SecurityViolationError extends ConfigurationError {
-  readonly errorCode = 'SECURITY_VIOLATION';
-  
-  constructor(issue: string) {
+  constructor(issue) {
     super(`Security violation detected: ${issue}`);
+    this.errorCode = 'SECURITY_VIOLATION';
   }
 }
 
-// Validation result types
-interface ValidationSuccess {
-  readonly success: true;
-  readonly config: MCPConfiguration;
-  readonly warnings: readonly string[];
-}
-
-interface ValidationFailure {
-  readonly success: false;
-  readonly errors: readonly ConfigurationError[];
-  readonly warnings: readonly string[];
-}
-
-type ValidationResult = ValidationSuccess | ValidationFailure;
-
 // Server-specific validation schemas
-const SERVER_SCHEMAS: Record<ServerType, {
-  readonly requiredArgs: readonly string[];
-  readonly requiredEnv: readonly string[];
-  readonly optionalEnv: readonly string[];
-}> = {
+const SERVER_SCHEMAS = {
   'github': {
     requiredArgs: ['-y', '@modelcontextprotocol/server-github'],
     requiredEnv: ['GITHUB_PERSONAL_ACCESS_TOKEN'],
@@ -230,14 +140,12 @@ const SERVER_SCHEMAS: Record<ServerType, {
 /**
  * Type guard to check if a value is a valid MCP configuration
  */
-function isMCPConfiguration(value: unknown): value is MCPConfiguration {
+function isMCPConfiguration(value) {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
   
-  const config = value as Record<string, unknown>;
-  
-  if (!('mcpServers' in config) || typeof config.mcpServers !== 'object') {
+  if (!('mcpServers' in value) || typeof value.mcpServers !== 'object') {
     return false;
   }
   
@@ -247,25 +155,23 @@ function isMCPConfiguration(value: unknown): value is MCPConfiguration {
 /**
  * Type guard to check if a server config is valid
  */
-function isValidServerConfig(config: unknown): config is MCPServerConfig {
+function isValidServerConfig(config) {
   if (typeof config !== 'object' || config === null) {
     return false;
   }
   
-  const serverConfig = config as Record<string, unknown>;
-  
   return (
-    typeof serverConfig.command === 'string' &&
-    Array.isArray(serverConfig.args) &&
-    serverConfig.args.every((arg: unknown) => typeof arg === 'string')
+    typeof config.command === 'string' &&
+    Array.isArray(config.args) &&
+    config.args.every((arg) => typeof arg === 'string')
   );
 }
 
 /**
  * Validates environment variables for security issues
  */
-function validateSecurityConstraints(config: MCPConfiguration): readonly string[] {
-  const warnings: string[] = [];
+function validateSecurityConstraints(config) {
+  const warnings = [];
   
   for (const [serverName, serverConfig] of Object.entries(config.mcpServers)) {
     if (serverConfig.env) {
@@ -291,12 +197,8 @@ function validateSecurityConstraints(config: MCPConfiguration): readonly string[
 /**
  * Validates a single server configuration against its schema
  */
-function validateServerConfig(
-  serverName: string, 
-  config: MCPServerConfig, 
-  serverType: ServerType
-): readonly ConfigurationError[] {
-  const errors: ConfigurationError[] = [];
+function validateServerConfig(serverName, config, serverType) {
+  const errors = [];
   const schema = SERVER_SCHEMAS[serverType];
   
   // Validate required arguments
@@ -320,11 +222,11 @@ function validateServerConfig(
 }
 
 /**
- * Main configuration validator with comprehensive type checking
+ * Main configuration validator with comprehensive validation
  */
-function validateMCPConfiguration(configData: unknown): ValidationResult {
-  const errors: ConfigurationError[] = [];
-  const warnings: string[] = [];
+function validateMCPConfiguration(configData) {
+  const errors = [];
+  const warnings = [];
   
   // Type guard validation
   if (!isMCPConfiguration(configData)) {
@@ -343,7 +245,7 @@ function validateMCPConfiguration(configData: unknown): ValidationResult {
     }
     
     // Map server name to type (with fallback handling)
-    const serverType = serverName.replace(/\s+/g, '-').toLowerCase() as ServerType;
+    const serverType = serverName.replace(/\s+/g, '-').toLowerCase();
     
     if (serverType in SERVER_SCHEMAS) {
       const serverErrors = validateServerConfig(serverName, serverConfig, serverType);
@@ -367,7 +269,7 @@ function validateMCPConfiguration(configData: unknown): ValidationResult {
 /**
  * Utility function to safely parse JSON with proper error handling
  */
-function safeParseJSON(jsonString: string, filePath: string): unknown {
+function safeParseJSON(jsonString, filePath) {
   try {
     return JSON.parse(jsonString);
   } catch (error) {
@@ -379,18 +281,9 @@ function safeParseJSON(jsonString: string, filePath: string): unknown {
 }
 
 /**
- * Export types and functions for external use
+ * Export functions and classes for external use
  */
-export {
-  // Types
-  type MCPConfiguration,
-  type MCPServerConfig,
-  type MCPServersConfig,
-  type ValidationResult,
-  type ValidationSuccess,
-  type ValidationFailure,
-  type ServerType,
-  
+module.exports = {
   // Error classes
   ConfigurationError,
   InvalidServerConfigError,
@@ -411,8 +304,9 @@ export {
 /**
  * Example usage:
  * 
- * ```typescript
- * import { validateMCPConfiguration, safeParseJSON } from './config-validator';
+ * ```javascript
+ * const { validateMCPConfiguration, safeParseJSON } = require('./config-validator');
+ * const fs = require('fs');
  * 
  * const configJson = fs.readFileSync('.roo/mcp.json', 'utf8');
  * const configData = safeParseJSON(configJson, '.roo/mcp.json');

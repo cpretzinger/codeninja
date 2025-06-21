@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "codeninja": {
+      "command": "node",
+      "args": ["codeninja-server-http.js"],
+      "env": {
+        "N8N_URL": "${N8N_URL}",
+        "N8N_API_KEY": "${N8N_API_KEY}",
+        "N8N_WEBHOOK_URL": "${N8N_WEBHOOK_URL}",
+        "HTTP_PORT": "3005",
+        "HTTP_HOST": "0.0.0.0",
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
