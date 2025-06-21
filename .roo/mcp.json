@@ -2,7 +2,7 @@
   "mcpServers": {
     "codeninja": {
       "command": "node",
-      "args": ["codeninja-server-http.js"],
+      "args": ["codeninja-server.js"],
       "env": {
         "N8N_URL": "${N8N_URL}",
         "N8N_API_KEY": "${N8N_API_KEY}",

@@ -20,5 +20,3 @@ services:
 networks:
   codeninja-network:
     driver: bridge
-
-# No n8n service needed - you already have it running!

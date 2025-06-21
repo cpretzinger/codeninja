@@ -1,7 +1,3 @@
-s;
-/**
- * Implementation of connection pool for managing SSE connections
- */
 export class SSEConnectionPool {
     connections = new Map();
     connectionHistory = [];
