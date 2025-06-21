@@ -3,19 +3,23 @@ services:
     container_name: codeninja
     build: .
     restart: unless-stopped
-    ports:
-      - "3005:3005"  # Expose HTTP port for MCP connections
     env_file:
-      - .env  # Load environment variables from .env file
+      - .env  # ✅ This IS loading your .env file correctly
     environment:
-      # Override specific values if needed
       - NODE_ENV=production
+      # These override .env if needed
+      - N8N_URL=${N8N_URL:-http://localhost:5678}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678}
       - HTTP_PORT=3005
-      - HTTP_HOST=0.0.0.0
     volumes:
       - ./logs:/app/logs
+    # ports:
+    #   - "3005:3005"
     networks:
       - codeninja-network
+    # Add this to keep container running for stdio access
+    command: ["dumb-init", "--", "node", "codeninja-server.js"]
 
 networks:
   codeninja-network:

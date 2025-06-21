@@ -41,7 +41,37 @@ class N8NAPIError extends Error {
         this.name = 'N8NAPIError';
     }
 }
+/**
+ * Detect transport mode and handle stdio if needed
+ */
+function detectTransportMode() {
+    // Check for stdio mode indicators
+    const isStdioMode = process.argv.includes('--stdio') || 
+                       process.env.MCP_TRANSPORT === 'stdio' ||
+                       process.stdin.isTTY === false;
+    
+    return isStdioMode ? 'stdio' : 'http';
+}
 
+/**
+ * Stdio MCP Server Handler
+ */
+async function handleStdioMode() {
+    console.error('[STDIO] Starting MCP server in stdio mode...');
+    
+    const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js');
+    
+    // Initialize MCP server
+    const server = await initializeMCPServer();
+    
+    // Create stdio transport
+    const transport = new StdioServerTransport();
+    
+    // Connect server to transport
+    await server.connect(transport);
+    
+    console.error('[STDIO] Server connected and ready');
+}
 /**
  * SSE Connection Pool
  */
@@ -1311,7 +1341,13 @@ function setupGracefulShutdown() {
  */
 async function main() {
     try {
-        console.log('[HTTP] 🥷 CodeNinja MCP Server starting with HTTP transport...');
+        const transportMode = detectTransportMode();
+        
+        if (transportMode === 'stdio') {
+            await handleStdioMode();
+            return; // Exit here for stdio mode
+        }
+
         console.log('[HTTP] Environment configuration:', {
             N8N_URL: envConfig.N8N_URL,
             NODE_ENV: envConfig.NODE_ENV,
@@ -1327,7 +1363,7 @@ async function main() {
         // Test N8N API connectivity
         console.log('[MCP] Testing N8N API connectivity...');
         try {
-            const testResponse = await api.get('/workflows?limit=1');
+            const testResponse = await api.get('/executions?limit=1');
             console.log('[API] 200 /workflows?limit=1');
             console.log('[MCP] N8N API connectivity confirmed');
         } catch (error) {

@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Install dumb-init and curl for proper signal handling and health checks
 RUN apk add --no-cache dumb-init curl
@@ -15,8 +15,9 @@ RUN npm ci --only=production
 # Copy app source
 COPY . .
 
-# Create logs directory
-RUN mkdir -p /app/logs
+# Create logs directory and fix permissions
+RUN mkdir -p /app/logs && \
+    chown -R node:node /app
 
 # Expose HTTP port
 EXPOSE 3005
@@ -32,4 +33,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the HTTP server
-CMD ["node", "codeninja-server-http.js"]
+CMD ["node", "codeninja-server.js"]
